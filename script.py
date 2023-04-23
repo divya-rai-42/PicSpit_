@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, Response, send_file
+from flask import Flask, request, render_template, jsonify, Response, send_file, redirect, make_response
 import os
 # check opencv version
 import cv2
@@ -13,7 +13,7 @@ import face_recognition
 import shutil
 import zipfile
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Set the upload folder and allowed file types
 UPLOAD_FOLDER = 'uploads'
@@ -38,6 +38,38 @@ def createZip():
 
 
 def processImages():
+    folder_path = './Segregated_folders' # replace with the path to your folder
+
+    if os.path.exists(folder_path):
+    # Delete the folder and its contents
+        os.system(f"rm -r {folder_path}")
+        print(f"The folder {folder_path} has been deleted.")
+    else:
+        print(f"The folder {folder_path} does not exist.")
+
+    
+    file_path = './Segregated_folders.zip' # replace with the path to your file
+
+    if os.path.exists(file_path):
+        # Delete the file
+        os.remove(file_path)
+        print(f"The file {file_path} has been deleted.")    
+    else:
+        print(f"The file {file_path} does not exist.")
+
+    folder_path = './uploads' # replace with the path to your folder
+
+    # Get a list of all the files in the folder
+    file_list = os.listdir(folder_path)
+
+    # Loop through the files and delete them one by one
+    for filename in file_list:
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+    print(f"All files in the folder {folder_path} have been deleted.")
+
     filenames = os.listdir(app.config['UPLOAD_FOLDER'])
 
     folder_name = "Segregated_folders"
@@ -77,26 +109,33 @@ def processImages():
 
             flag = False
             flag2 = False
+            flag3 = False
 
             for item in list_dir:
+                # print("item")
                 item_path = os.path.join(segregated_dir, item)
 
                 primary_path = item_path + "/primary.jpg"
 
-                print(primary_path)
+                print("This is primary path" + primary_path)
 
                 if os.path.exists(primary_path) == False:
+                    print("continued")
                     continue
 
                 img = cv2.imread(primary_path)
                 rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 # img_encoding = face_recognition.face_encodings(img)[0]
-                face_locations = face_recognition.face_locations(img, number_of_times_to_upsample=2)
+                face_locations = face_recognition.face_locations(img, number_of_times_to_upsample=5)
+                print(face_locations)
                 face_encodings_sample = face_recognition.face_encodings(img, known_face_locations=face_locations, num_jitters=100)
                 if len(face_encodings_sample) == 0:
-                    flag2 = True
-                    break
+                    print("here")
+                    flag3 = True
+                    continue
+
                 face_encodings = face_recognition.face_encodings(img, known_face_locations=face_locations, num_jitters=100)[0]
+                print("First step done")
 
                 img2 = cv2.imread("./this_face.jpg")
                 rgb_img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
@@ -108,12 +147,15 @@ def processImages():
                     flag2 = True
                     break
                 face_encodings2 = face_recognition.face_encodings(img2, known_face_locations=face_locations2, num_jitters=100)[0]
+                print("Second step done")
 
-                results = face_recognition.compare_faces([face_encodings], face_encodings2,0.5)
+                results = face_recognition.compare_faces([face_encodings], face_encodings2,0.6)
+                print(results[0])
 
                 if results[0] == True:
                     flag = True
                     shutil.copy(filename, item_path)
+                    print("Added")
                     break
 
 
@@ -144,13 +186,10 @@ def processImages():
 
 
 
-
-
-
 # Render the web form
 @app.route('/')
 def upload_form():
-    return render_template('index.html')
+    return render_template('home.html')
 
 @app.route('/', methods=['POST'])
 def upload():
@@ -166,8 +205,18 @@ def upload():
     
     processImages()
     createZip()
+    # response = make_response(redirect('/folder'))
+    # return send_file("./Segregated_folders.zip", as_attachment=True, response=response)
     # return Response('File uploaded successfully', status=200)
     return send_file("./Segregated_folders.zip", as_attachment=True)
+
+@app.route('/folder')
+def vmd_timestamp():
+    path = './Segregated_folders' # replace with the path to your folder
+    # subfolders = [f.path for f in os.scandir(path) if f.is_dir()]
+    # num_subfolders = len(subfolders)
+    list_dir = os.listdir(path)
+    return render_template('folder.html',num_subfolders=path)
 
 if __name__ == "__main__":
     app.run(debug = True)
