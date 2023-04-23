@@ -38,38 +38,7 @@ def createZip():
 
 
 def processImages():
-    folder_path = './Segregated_folders' # replace with the path to your folder
-
-    if os.path.exists(folder_path):
-    # Delete the folder and its contents
-        os.system(f"rm -r {folder_path}")
-        print(f"The folder {folder_path} has been deleted.")
-    else:
-        print(f"The folder {folder_path} does not exist.")
-
     
-    file_path = './Segregated_folders.zip' # replace with the path to your file
-
-    if os.path.exists(file_path):
-        # Delete the file
-        os.remove(file_path)
-        print(f"The file {file_path} has been deleted.")    
-    else:
-        print(f"The file {file_path} does not exist.")
-
-    folder_path = './uploads' # replace with the path to your folder
-
-    # Get a list of all the files in the folder
-    file_list = os.listdir(folder_path)
-
-    # Loop through the files and delete them one by one
-    for filename in file_list:
-        file_path = os.path.join(folder_path, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-
-    print(f"All files in the folder {folder_path} have been deleted.")
-
     filenames = os.listdir(app.config['UPLOAD_FOLDER'])
 
     folder_name = "Segregated_folders"
@@ -193,6 +162,39 @@ def upload_form():
 
 @app.route('/', methods=['POST'])
 def upload():
+    folder_path = './Segregated_folders' # replace with the path to your folder
+
+    if os.path.exists(folder_path):
+    # Delete the folder and its contents
+        os.system(f"rm -r {folder_path}")
+        print(f"The folder {folder_path} has been deleted.")
+    else:
+        print(f"The folder {folder_path} does not exist.")
+
+    
+    file_path = './Segregated_folders.zip' # replace with the path to your file
+
+    if os.path.exists(file_path):
+        # Delete the file
+        os.remove(file_path)
+        print(f"The file {file_path} has been deleted.")    
+    else:
+        print(f"The file {file_path} does not exist.")
+
+    folder_path = './uploads' # replace with the path to your folder
+
+    # Get a list of all the files in the folder
+    file_list = os.listdir(folder_path)
+
+    # Loop through the files and delete them one by one
+    for filename in file_list:
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+    print(f"All files in the folder {folder_path} have been deleted.")
+
+    print("Enterred in upload")
     # check if the post request has the file part
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
