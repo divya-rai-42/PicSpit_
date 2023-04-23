@@ -205,10 +205,10 @@ def upload():
     
     processImages()
     createZip()
-    # response = make_response(redirect('/folder'))
+    return redirect('/folder')
     # return send_file("./Segregated_folders.zip", as_attachment=True, response=response)
     # return Response('File uploaded successfully', status=200)
-    return send_file("./Segregated_folders.zip", as_attachment=True)
+    # return send_file("./Segregated_folders.zip", as_attachment=True)
 
 @app.route('/folder')
 def vmd_timestamp():
@@ -216,7 +216,7 @@ def vmd_timestamp():
     # subfolders = [f.path for f in os.scandir(path) if f.is_dir()]
     # num_subfolders = len(subfolders)
     list_dir = os.listdir(path)
-    return render_template('folder.html',num_subfolders=path)
+    return render_template('folder.html',list_dir=list_dir)
 
 if __name__ == "__main__":
     app.run(debug = True)
